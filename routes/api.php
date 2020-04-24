@@ -16,9 +16,11 @@ use Illuminate\Support\Facades\Route;
 Route::post('login', 'UserController@login');
 Route::post('register', 'UserController@register');
 Route::get('service', "ServiceController@index");
-Route::post('service', "ServiceController@store");
+Route::post('service/{id}', "ServiceController@store");
+Route::get('service/tes', "ServiceController@show");
+
 
 Route::group(['middleware' => ['jwt.verify']], function () {
-    Route::post('logout', "UserController@logout"); //cek token
+    Route::post('logout', "UserController@logout");
     Route::get('login/check', "UserController@LoginCheck"); //cek token
 });

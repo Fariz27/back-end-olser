@@ -21,6 +21,7 @@ class Service extends Migration
             $table->integer('price_range_min');
             $table->integer('price_range_max');
             $table->text('location');
+            $table->text('description');
             $table->timestamps();
         });
     }

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Service;
+use App\Image_file;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class ServiceController extends Controller
 {
@@ -17,8 +19,9 @@ class ServiceController extends Controller
     {
         try{
 	        $data["count"] = Service::count();
-            $data["service"] = Service::join('users', 'service.id_partner', '=', 'users.id')
-                                        ->select('service.*','users.name')->get();
+            $data["service"] = Service::join('users', 'service.id_partner', '=', 'users.id')    
+                                        ->join('image_file', 'service.image_id', '=', 'image_file.id')
+                                        ->select('service.*','users.name AS usname','image_file.name AS imname')->get();
 	        $data["status"] = 1;
 	        return response($data);
 
@@ -46,15 +49,16 @@ class ServiceController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request,$id)
     {
         try{
     		$validator = Validator::make($request->all(), [
     			'img'                         => 'required',
 				'service'			          => 'required|string|max:500',
-                'price_range_min'			  => 'required',
-                'price_range_max'			  => 'required',
-                'location'                    => 'required',
+                'price_range_min'			  => 'required|integer',
+                'price_range_max'			  => 'required|integer',
+                'location'                    => 'required', 
+                'description'                    => 'required', 
                 
     		]);
 
@@ -64,12 +68,32 @@ class ServiceController extends Controller
     				'message'	=> $validator->errors()
     			]);
             }
+            
+
             $file = $request->file('img');
             $tujuan_upload = 'data_file';
-            $file->move($tujuan_upload,$file->getClientOriginalName());
+            $nameimg = $file->getClientOriginalExtension().Str::random(6).'.'.$file->getClientOriginalExtension();
+            $file->move($tujuan_upload,$nameimg);
+
+            $dataImage = new Image_file();
+            $dataImage->partner_id  = $id;
+            $dataImage->name        = $nameimg;
+            $dataImage->save();
+            $imageDat = Image_file::where('name',$nameimg)->first();
+
+            $data = new Service();
+	        $data->id_partner       = $id;
+	        $data->image_id         = $imageDat->id;
+	        $data->service          = $request->input('service');
+            $data->price_range_min  = $request->input('price_range_min');
+            $data->price_range_max  = $request->input('price_range_max');
+	        $data->location         = $request->input('location');
+	        $data->description      = $request->input('description');
+	        $data->save();
+
     		return response()->json([
     			'status'	=> '1',
-                'message'	=> 'Data gambar berhasil ditambahkan!'
+                'message'	=> $imageDat->id
                 
     		], 201);
 
@@ -89,7 +113,7 @@ class ServiceController extends Controller
      */
     public function show($id)
     {
-        //
+
     }
 
     /**
