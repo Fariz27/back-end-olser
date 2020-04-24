@@ -113,7 +113,21 @@ class ServiceController extends Controller
      */
     public function show($id)
     {
+        try{
+	        $data["count"] = Service::count();
+            $data["service"] = Service::join('users', 'service.id_partner', '=', 'users.id')    
+                                        ->join('image_file', 'service.image_id', '=', 'image_file.id')
+                                        ->select('service.*','users.name AS usname','users.contact AS uscontact','users.address AS usadd','image_file.name AS imname')
+                                        ->where('service.id',$id)->first();
+	        $data["status"] = 1;
+	        return response($data);
 
+	    } catch(\Exception $e){
+			return response()->json([
+			  'status' => '0',
+			  'message' => $e->getMessage()
+			]);
+      	}
     }
 
     /**

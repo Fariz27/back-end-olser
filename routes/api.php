@@ -17,6 +17,7 @@ Route::post('login', 'UserController@login');
 Route::post('register', 'UserController@register');
 Route::get('service', "ServiceController@index");
 Route::post('service/{id}', "ServiceController@store");
+Route::get('service/{id}', "ServiceController@show");
 Route::get('service/tes', "ServiceController@show");
 
 
